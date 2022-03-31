@@ -250,24 +250,6 @@ cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails
     return cv_result;
 }
 
-/**
- * @brief The following function takes the whole dataset and splits it in two vectors, respectively containing
- * the first 54 cells (the input features) of each mail and the class label.
- *
- * @param mails_dataset  Represents the starting dataset.
- * @param X Is the vector of features for each mail.
- * @param y Is the vector of class labels corresponding to each mail.
- */
-void init_trainig_dataset(vector<vector<float>> &mails_dataset, vector<vector<float>> &X, vector<float> &y)
-{
-    for (vector<float> &row : mails_dataset)
-    {
-        X.push_back(vector<float>(row.begin(), row.begin() + 54));
-        // cout << "SIZE: " << X[0].size() << std::endl;
-        y.push_back(row[57]);
-    }
-}
-
 int main(int argc, char const *argv[])
 {
     vector<vector<float>> mails_dataset = read_dataset("spambase.data");

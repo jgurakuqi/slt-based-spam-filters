@@ -5,7 +5,6 @@
 #include <sstream>
 #include <cmath>
 #include <chrono>
-
 #include <algorithm>
 #include <random>
 #include <iterator>
@@ -60,8 +59,8 @@ public:
             }
             total += ((prob_of_x_given_spam > prob_of_x_given_ham) == dataset[j][57]);
         }
-        cout << "TOTAL IN SCORE: --- " << total << std::endl;
-        cout << "TOTAL/MEAN IN SCORE: --- " << total / dataset_size << std::endl;
+        // cout << "TOTAL IN SCORE: --- " << total << std::endl;
+        // cout << "TOTAL/MEAN IN SCORE: --- " << total / dataset_size << std::endl;
         return total / dataset_size;
     }
 
@@ -73,10 +72,6 @@ public:
         spam_frequency = ham_frequency = 0;
         vector<float> spam_totals(54, 0.);
         vector<float> ham_totals(54, 0.);
-        spam_mean = vector<float>(54, 0.);
-        ham_mean = vector<float>(54, 0.);
-        spam_variance = vector<float>(54, 0.);
-        ham_variance = vector<float>(54, 0.);
         int i;
         // Mean pre computing
         for (vector<float> &row : dataset)
@@ -104,6 +99,8 @@ public:
         this->ham_probability = ham_frequency / size;
         // Mean Computation
         float spam_size, ham_size;
+        spam_mean = vector<float>(54, 0.);
+        ham_mean = vector<float>(54, 0.);
         for (i = 0; i < 54; i++)
         {
             this->spam_mean[i] = spam_totals[i] / spam_frequency;
@@ -129,6 +126,8 @@ public:
         // Variance computation
         float spamTotal, hamTotal;
         spamTotal = hamTotal = 0.;
+        spam_variance = vector<float>(54, 0.);
+        ham_variance = vector<float>(54, 0.);
         for (i = 0; i < 54; i++)
         {
             this->spam_variance[i] = spam_totals[i] / spam_frequency + std::numeric_limits<float>::min();
@@ -206,7 +205,7 @@ cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails
     // vector<vector<float>> test_fold, other_folds;
     vector<vector<float>>::const_iterator dataset_begin = mails_dataset.begin();
     // Thread pool initialization
-    thread_provider<mutex> pool(25);
+    thread_provider<mutex> pool;
     mutex total_score_mutex;
 
     vector<float> all_scores(10);

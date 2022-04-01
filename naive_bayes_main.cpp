@@ -15,6 +15,9 @@
 using namespace std;
 using namespace std::chrono;
 
+constexpr float ABSOLUTE_MIN = numeric_limits<float>::min();
+constexpr float ABSOLUTE_MAX = numeric_limits<float>::max();
+
 class cross_validation_result
 {
 public:
@@ -22,8 +25,18 @@ public:
     cross_validation_result()
     {
         avg_accuracy = accuracy_variance = 0;
-        min_accuracy = std::numeric_limits<float>::max();
-        max_accuracy = std::numeric_limits<float>::min();
+        min_accuracy = ABSOLUTE_MAX;
+        max_accuracy = ABSOLUTE_MIN;
+    }
+
+    void print_scores()
+    {
+        cout << endl
+             << "Minimum Accuracy: " << this->min_accuracy << endl
+             << "Average Accuracy: " << this->avg_accuracy << endl
+             << "Maximum Accuracy: " << this->max_accuracy << endl
+             << "Variance of Accuracy: " << this->accuracy_variance << endl
+             << "Standard Deviation of Accuracy: " << sqrt(this->accuracy_variance) << endl;
     }
 };
 
@@ -41,34 +54,31 @@ public:
     naive_bayes_classifier() = default;
     ~naive_bayes_classifier() = default;
 
-    float score(vector<vector<float>> &dataset)
+    float score(vector<vector<float>> &test_set)
     {
-        int dataset_size = dataset.size();
+        int test_set_size = test_set.size();
         float prob_of_x_given_spam, prob_of_x_given_ham;
         float total = 0.;
-        for (int j = 0; j < dataset_size; j++)
+        for (int i = 0; i < test_set_size; i++)
         {
             prob_of_x_given_ham = this->ham_probability;
             prob_of_x_given_spam = this->spam_probability;
-            for (int i = 0; i < 54; i++)
+            for (int j = 0; j < 54; j++)
             {
-                prob_of_x_given_spam *= pow((2 * M_PI * spam_variance[i]), (-0.5)) *
-                                        exp((dataset[j][i] - spam_mean[i]) * (dataset[j][i] - spam_mean[i]) / (-2 * spam_variance[i]));
-                prob_of_x_given_ham *= pow((2 * M_PI * ham_variance[i]), (-0.5)) *
-                                       exp((dataset[j][i] - ham_mean[i]) * (dataset[j][i] - ham_mean[i]) / (-2 * ham_variance[i]));
+                prob_of_x_given_spam *= pow((2 * M_PI * spam_variance[j]), (-0.5)) *
+                                        exp((test_set[i][j] - spam_mean[j]) * (test_set[i][j] - spam_mean[j]) / (-2 * spam_variance[j]));
+                prob_of_x_given_ham *= pow((2 * M_PI * ham_variance[j]), (-0.5)) *
+                                       exp((test_set[i][j] - ham_mean[j]) * (test_set[i][j] - ham_mean[j]) / (-2 * ham_variance[j]));
             }
-            total += ((prob_of_x_given_spam > prob_of_x_given_ham) == dataset[j][57]);
+            total += ((prob_of_x_given_spam > prob_of_x_given_ham) == test_set[i][57]);
         }
-        // cout << "TOTAL IN SCORE: --- " << total << std::endl;
-        // cout << "TOTAL/MEAN IN SCORE: --- " << total / dataset_size << std::endl;
-        return total / dataset_size;
+        return total / test_set_size;
     }
 
     void fit(vector<vector<float>> &dataset)
     {
-        // TODO: Split Ham and Spam emails in Cross Validation to pass them already split into fit and score
         int spam_frequency, ham_frequency;
-        float size = static_cast<float>(dataset.size());
+        float dataset_size = static_cast<float>(dataset.size());
         spam_frequency = ham_frequency = 0;
         vector<float> spam_totals(54, 0.);
         vector<float> ham_totals(54, 0.);
@@ -93,10 +103,8 @@ public:
                 }
             }
         }
-        // cout << "PROPORTION OF SPAM IN FIT: --- " << spam_frequency / size << std::endl;
-        // cout << "PROPORTION OF HAM IN FIT: --- " << ham_frequency / size << std::endl;
-        this->spam_probability = spam_frequency / size;
-        this->ham_probability = ham_frequency / size;
+        this->spam_probability = spam_frequency / dataset_size;
+        this->ham_probability = ham_frequency / dataset_size;
         // Mean Computation
         float spam_size, ham_size;
         spam_mean = vector<float>(54, 0.);
@@ -105,10 +113,10 @@ public:
         {
             this->spam_mean[i] = spam_totals[i] / spam_frequency;
             this->ham_mean[i] = ham_totals[i] / ham_frequency;
+            spam_totals[i] = 0;
+            ham_totals[i] = 0;
         }
         // Variance pre computing: here spam totals will be used to cumulatively store the sum of variances
-        std::fill(spam_totals.begin(), spam_totals.end(), 0);
-        std::fill(ham_totals.begin(), ham_totals.end(), 0);
         for (int j = 0; j < spam_frequency; j++)
         {
             for (i = 0; i < 54; i++)
@@ -124,18 +132,13 @@ public:
             }
         }
         // Variance computation
-        float spamTotal, hamTotal;
-        spamTotal = hamTotal = 0.;
         spam_variance = vector<float>(54, 0.);
         ham_variance = vector<float>(54, 0.);
         for (i = 0; i < 54; i++)
         {
-            this->spam_variance[i] = spam_totals[i] / spam_frequency + std::numeric_limits<float>::min();
-            spamTotal += this->spam_variance[i];
-            this->ham_variance[i] = ham_totals[i] / ham_frequency + std::numeric_limits<float>::min();
-            hamTotal += this->ham_variance[i];
+            this->spam_variance[i] = spam_totals[i] / spam_frequency + ABSOLUTE_MIN;
+            this->ham_variance[i] = ham_totals[i] / ham_frequency + ABSOLUTE_MIN;
         }
-        // cout << "TOTAL VARIANCE FOR SPAM AND HAM: " << spamTotal << "   " << hamTotal << endl;
     }
 };
 
@@ -170,10 +173,8 @@ vector<vector<float>> read_dataset(string filePath)
         string substr;
         while (getline(ss, substr, ','))
         {
-            // cout << "Value: " << substr << " ";
             row.push_back(stof(substr));
         }
-        // cout << "\n";
         allData.push_back(row);
     }
     return allData;
@@ -187,55 +188,39 @@ vector<vector<float>> read_dataset(string filePath)
  */
 cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails_dataset)
 {
-
-    // Shuffles the dataset
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(mails_dataset.begin(), mails_dataset.end(), g);
     // Variables init
     int dataset_size = mails_dataset.size(),
         fold_size = dataset_size / 10,
         test_fold_start,
-        test_fold_end,
-        other_folds_start;
-    float total_score, minimum_score, avarage_score, maximum_score, score_variance;
-    avarage_score = score_variance = total_score = 0;
-    minimum_score = std::numeric_limits<float>::max();
-    maximum_score = std::numeric_limits<float>::min();
-    // vector<vector<float>> test_fold, other_folds;
+        test_fold_end;
+    float total_score = 0.;
+    int irregular_folds = (dataset_size % 10) != 0;
+    // vector<vector<float>> test_fold, train_folds;
     vector<vector<float>>::const_iterator dataset_begin = mails_dataset.begin();
     // Thread pool initialization
-    thread_provider<mutex> pool;
-    mutex total_score_mutex;
 
     vector<float> all_scores(10);
-    cross_validation_result cv_result;
 
+    thread_provider<mutex> pool;
     // CROSS VALIDATION.
     for (uint8_t validation_iteration = 0; validation_iteration < 10; validation_iteration++)
     {
         pool.executeTask(
             [&, validation_iteration, dataset_begin]()
             {
-                vector<vector<float>> test_fold, other_folds;
+                vector<vector<float>> test_fold, train_folds;
                 test_fold_start = validation_iteration * fold_size;
                 test_fold_end = (validation_iteration == 9 &&
-                                 (dataset_size % 10) != 0)
+                                 irregular_folds)
                                     ? dataset_size - 1
                                     : test_fold_start + fold_size - 1;
                 test_fold = vector<vector<float>>(dataset_begin + test_fold_start,
                                                   dataset_begin + test_fold_end);
-                other_folds = vector<vector<float>>(mails_dataset);
-                other_folds.erase(other_folds.begin() + test_fold_start, other_folds.begin() + test_fold_end);
-
-                // FIT AND SCORE
+                train_folds = vector<vector<float>>(mails_dataset);
+                train_folds.erase(train_folds.begin() + test_fold_start, train_folds.begin() + test_fold_end);
                 naive_bayes_classifier classifier;
-                classifier.fit(other_folds);
-                // {
-                // const std::lock_guard<std::mutex> lock(total_score_mutex);
+                classifier.fit(train_folds);
                 all_scores[validation_iteration] = classifier.score(test_fold);
-                // total_score += all_scores[validation_iteration];
-                // }
             });
     }
     pool.shutdown();
@@ -243,7 +228,7 @@ cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails
     {
         total_score += val;
     }
-
+    cross_validation_result cv_result;
     cv_result.avg_accuracy = total_score / 10.;
     for (float &single_result : all_scores)
     {
@@ -257,16 +242,14 @@ cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails
 int main(int argc, char const *argv[])
 {
     vector<vector<float>> mails_dataset = read_dataset("spambase.data");
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(mails_dataset.begin(), mails_dataset.end(), g);
     steady_clock::time_point begin = steady_clock::now();
     cross_validation_result result = __10_folds_cross_validation(mails_dataset);
     steady_clock::time_point end = steady_clock::now();
     double elapsedTime = static_cast<double>(duration_cast<microseconds>(end - begin).count()) / 1000000;
-    cout << "Elapsed time = " << elapsedTime << " seconds.\n"
-         << endl
-         << "MIN: " << result.min_accuracy << endl
-         << "MEAN: " << result.avg_accuracy << endl
-         << "MAX: " << result.max_accuracy << endl
-         << "VARIANCE: " << result.accuracy_variance << endl
-         << "STANDARD DEVIANCE: " << sqrt(result.accuracy_variance) << endl;
+    cout << "Elapsed time = " << elapsedTime << " seconds.";
+    result.print_scores();
     return 0;
 }

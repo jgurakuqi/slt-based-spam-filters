@@ -231,14 +231,19 @@ cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails
                 // FIT AND SCORE
                 naive_bayes_classifier classifier;
                 classifier.fit(other_folds);
-                {
-                    const std::lock_guard<std::mutex> lock(total_score_mutex);
-                    all_scores[validation_iteration] = classifier.score(test_fold);
-                    total_score += all_scores[validation_iteration];
-                }
+                // {
+                // const std::lock_guard<std::mutex> lock(total_score_mutex);
+                all_scores[validation_iteration] = classifier.score(test_fold);
+                // total_score += all_scores[validation_iteration];
+                // }
             });
     }
     pool.shutdown();
+    for (float &val : all_scores)
+    {
+        total_score += val;
+    }
+
     cv_result.avg_accuracy = total_score / 10.;
     for (float &single_result : all_scores)
     {

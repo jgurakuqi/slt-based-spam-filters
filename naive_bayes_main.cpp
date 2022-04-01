@@ -201,33 +201,30 @@ cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails
 
     vector<float> all_scores(10);
 
-    thread_provider<mutex> pool;
+    // thread_provider<mutex> pool;
     // CROSS VALIDATION.
+    naive_bayes_classifier classifier;
     for (uint8_t validation_iteration = 0; validation_iteration < 10; validation_iteration++)
     {
-        pool.executeTask(
-            [&, validation_iteration, dataset_begin]()
-            {
-                vector<vector<float>> test_fold, train_folds;
-                test_fold_start = validation_iteration * fold_size;
-                test_fold_end = (validation_iteration == 9 &&
-                                 irregular_folds)
-                                    ? dataset_size - 1
-                                    : test_fold_start + fold_size - 1;
-                test_fold = vector<vector<float>>(dataset_begin + test_fold_start,
-                                                  dataset_begin + test_fold_end);
-                train_folds = vector<vector<float>>(mails_dataset);
-                train_folds.erase(train_folds.begin() + test_fold_start, train_folds.begin() + test_fold_end);
-                naive_bayes_classifier classifier;
-                classifier.fit(train_folds);
-                all_scores[validation_iteration] = classifier.score(test_fold);
-            });
+        // pool.executeTask(
+        //     [&, validation_iteration, dataset_begin]()
+        //     {
+        vector<vector<float>> test_fold, train_folds;
+        test_fold_start = validation_iteration * fold_size;
+        test_fold_end = (validation_iteration == 9 &&
+                         irregular_folds)
+                            ? dataset_size - 1
+                            : test_fold_start + fold_size - 1;
+        test_fold = vector<vector<float>>(dataset_begin + test_fold_start,
+                                          dataset_begin + test_fold_end);
+        train_folds = vector<vector<float>>(mails_dataset);
+        train_folds.erase(train_folds.begin() + test_fold_start, train_folds.begin() + test_fold_end);
+        classifier.fit(train_folds);
+        all_scores[validation_iteration] = classifier.score(test_fold);
+        total_score += all_scores[validation_iteration];
+        // });
     }
-    pool.shutdown();
-    for (float &val : all_scores)
-    {
-        total_score += val;
-    }
+    // pool.shutdown();
     cross_validation_result cv_result;
     cv_result.avg_accuracy = total_score / 10.;
     for (float &single_result : all_scores)

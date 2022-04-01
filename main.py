@@ -15,11 +15,15 @@ mailData = np.loadtxt(data, delimiter=",")
 # MAIN:
 start = time()
 svm(mailData)
+end = time()
+print("\nTime elapsed for SVM: {}".format(end - start))
+
+start = time()
 svm_angular(mailData)
 end = time()
-print("\nTime elapsed: {}".format(end - start))
+print("\nTime elapsed for SVM Angular: {}".format(end - start))
 
 start = time()
 k_nn(mailData)
 end = time()
-print("\nTime elapsed: {}".format(end - start))
+print("\nTime elapsed for K-NN: {}".format(end - start))

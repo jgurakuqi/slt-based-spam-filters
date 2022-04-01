@@ -47,18 +47,19 @@ def svm(mailData):
 
     X, y = preprocessing_data(mailData)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
     # SVM with linear kernel
-    # TODO: check if we should use tfidf(X_train) or just X_train in .fit
+
     linear_classifier = SVC(kernel="linear", C=1.0)
     scores_linear = cross_val_score(linear_classifier, X, y, cv=10)
-    linear_classifier_fit = linear_classifier.fit(tfidf(X_train), y_train)
+    linear_classifier_fit = linear_classifier.fit(X_train, y_train)
     printOutput(scores_linear, "LINEAR", linear_classifier_fit.n_support_)
 
     # SVM with polynomial of degree 2 kernel
 
     poly2_classifier = SVC(kernel="poly", degree=2, C=1.0)
     scores_poly = cross_val_score(poly2_classifier, X, y, cv=10)
-    poly2_classifier_fit = poly2_classifier.fit(tfidf(X_train), y_train)
+    poly2_classifier_fit = poly2_classifier.fit(X_train, y_train)
     printOutput(scores_poly, "POLYNOMIAL OF DEGREE 2", poly2_classifier_fit.n_support_)
 
     # SVM with RBF kernel
@@ -68,7 +69,7 @@ def svm(mailData):
         radial_basis_function_classifier, X, y, cv=10
     )
     radial_basis_function_clf_fit = radial_basis_function_classifier.fit(
-        tfidf(X_train), y_train
+        X_train, y_train
     )
     printOutput(
         scores_radial_basis_function, "RBF", radial_basis_function_clf_fit.n_support_
@@ -143,16 +144,10 @@ def svm_angular(mailData):
 #
 # - cerca di capire che altre cose servono/mancano rispetto agli altri e se sono cose
 #   utili o meno, tipo grafici o altri confronti
-#     - Quasi tutti eccetto cina mettono l'elapsed time in questo modo:
-#          start_time = time.time()
-#          print("Single model and single prediction time:", time.time() - start_time,"seconds")
-#       E lo fanno per ogni modello, quindi sarebbe da capire come metterlo.
 #     - Buoso mette questo:
 #       # SVM with an higher C parameter to make the classifier more stringent in
 #       the classification of outliers
 #       clf = svm.SVC(kernel = "linear", C = 100)
-#     - Per il resto il punto dovrebbe essere completato, cioè non ci sono altre
-#       cose da aggiungere.
 #
 # - cerca di capire i n_jobs utili e necessari
 #     da verificare durante le stampe e i test.

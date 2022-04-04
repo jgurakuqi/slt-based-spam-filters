@@ -20,11 +20,11 @@ def printOutput(result):
 
 
 def k_nn(mailData):
-
-    np.random.shuffle(mailData)
+    # np.random.shuffle(mailData)
     X = mailData[:, :54]  # values
     y = mailData[:, 57]  # classes
 
     k_nn_classifier = KNeighborsClassifier(n_neighbors=5, p=2, metric="euclidean")
-    scores_k_nn = cross_val_score(k_nn_classifier, X, y, cv=10)
-    printOutput(scores_k_nn)
+    k_nn_scores = cross_val_score(k_nn_classifier, X, y, cv=10)
+    printOutput(k_nn_scores)
+    return k_nn_scores

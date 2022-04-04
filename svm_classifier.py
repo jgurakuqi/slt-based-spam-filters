@@ -12,7 +12,7 @@ def tfidf(mailData):
 
 
 def preprocessing_data(mailData):
-    np.random.shuffle(mailData)
+    # np.random.shuffle(mailData)
     X = mailData[:, :54]  # values
     y = mailData[:, 57]  # classes
     X = tfidf(X)
@@ -44,7 +44,6 @@ def printOutput(result, name_method, num_vectors):
 
 
 def svm(mailData):
-
     X, y = preprocessing_data(mailData)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
 
@@ -58,9 +57,9 @@ def svm(mailData):
     # SVM with polynomial of degree 2 kernel
 
     poly2_classifier = SVC(kernel="poly", degree=2, C=1.0)
-    scores_poly = cross_val_score(poly2_classifier, X, y, cv=10)
+    scores_poly2 = cross_val_score(poly2_classifier, X, y, cv=10)
     poly2_classifier_fit = poly2_classifier.fit(X_train, y_train)
-    printOutput(scores_poly, "POLYNOMIAL OF DEGREE 2", poly2_classifier_fit.n_support_)
+    printOutput(scores_poly2, "POLYNOMIAL OF DEGREE 2", poly2_classifier_fit.n_support_)
 
     # SVM with RBF kernel
 
@@ -74,6 +73,7 @@ def svm(mailData):
     printOutput(
         scores_radial_basis_function, "RBF", radial_basis_function_clf_fit.n_support_
     )
+    return scores_linear, scores_poly2, scores_radial_basis_function
 
 
 ###################################################################
@@ -128,15 +128,11 @@ def svm_angular(mailData):
         "RBF",
         radial_basis_fun_clf_norm_fit.n_support_,
     )
+    return scores_linear_norm, scores_poly2_norm, scores_radial_basis_function_norm
 
 
 # TODO:
 # - cerca di capire se va usato solo n_support_ o anche altri parametri
-#    - Alex fa la confusion_matrix sui test e stampa quello che stampo io
-#      eccetto che per i n_support_ , da vedere con jugi perche mi dice che è
-#      deprecato il metodo:
-#         plot_confusion_matrix(nome_metodo, X_test, y_test)
-#         plt.show()
 #    - Buoso utilizza anche questo che ti fa un report e fa due stampe in piu:
 #         metrics.classification_report(y_true=y_test, y_pred = y_pred)
 #         print('Mean fit time =', np.mean(res['fit_time']))

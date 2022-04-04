@@ -11,5 +11,6 @@ Before of running the jupyter notebook file named "main.ipynb", if the naive_bay
 naivelib.so files are misssing, there is need to compile the c++ file with the following commands, in order
 to export it as a callable library for Python:
 
-g++ -shared -Wlc -fPIC naive_bayes_main.cpp -Wextra -Wall -o naive_ba
-g++ -c -fPIC nashared -Wl,-soname,naivelib.so -o naivelib.so naive_bayes_main.o
+
+g++ -c -fPIC naive_bayes_main.cpp -O3 -Wextra -Wall -o naive_bayes_main.o
+g++ -shared -Wl,-soname,lib_naive.so -o lib_naive_.so  naive_bayes_main.o

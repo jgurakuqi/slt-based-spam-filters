@@ -1,16 +1,12 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
-#include <string>
 #include <sstream>
 #include <cmath>
 #include <chrono>
 #include <algorithm>
 #include <random>
 #include <iterator>
-#include <mutex>
-
-#include "thread_provider.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -18,27 +14,32 @@ using namespace std::chrono;
 constexpr float ABSOLUTE_MIN = numeric_limits<float>::min();
 constexpr float ABSOLUTE_MAX = numeric_limits<float>::max();
 
-class cross_validation_result
+extern "C"
 {
-public:
-    float avg_accuracy, min_accuracy, max_accuracy, accuracy_variance;
-    cross_validation_result()
+    class cross_validation_result
     {
-        avg_accuracy = accuracy_variance = 0;
-        min_accuracy = ABSOLUTE_MAX;
-        max_accuracy = ABSOLUTE_MIN;
-    }
+    public:
+        float avg_accuracy, min_accuracy, max_accuracy, accuracy_variance;
+        cross_validation_result()
+        {
+            avg_accuracy = accuracy_variance = 0;
+            min_accuracy = ABSOLUTE_MAX;
+            max_accuracy = ABSOLUTE_MIN;
+        }
 
-    void print_scores()
-    {
-        cout << endl
-             << "Minimum Accuracy: " << this->min_accuracy << endl
-             << "Average Accuracy: " << this->avg_accuracy << endl
-             << "Maximum Accuracy: " << this->max_accuracy << endl
-             << "Variance of Accuracy: " << this->accuracy_variance << endl
-             << "Standard Deviation of Accuracy: " << sqrt(this->accuracy_variance) << endl;
-    }
-};
+        void print_scores()
+        {
+            cout << "==========================================================" << endl
+                 << "Naive bayes classification: " << endl
+                 << "Minimum Accuracy: " << this->min_accuracy << endl
+                 << "Average Accuracy: " << this->avg_accuracy << endl
+                 << "Maximum Accuracy: " << this->max_accuracy << endl
+                 << "Variance of Accuracy: " << this->accuracy_variance << endl
+                 << "Standard Deviation of Accuracy: " << sqrt(this->accuracy_variance) << endl
+                 << "==========================================================" << endl;
+        }
+    };
+}
 
 class naive_bayes_classifier
 {
@@ -106,7 +107,6 @@ public:
         this->spam_probability = spam_frequency / dataset_size;
         this->ham_probability = ham_frequency / dataset_size;
         // Mean Computation
-        float spam_size, ham_size;
         spam_mean = vector<float>(54, 0.);
         ham_mean = vector<float>(54, 0.);
         for (i = 0; i < 54; i++)
@@ -236,17 +236,35 @@ cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails
     return cv_result;
 }
 
-int main(int argc, char const *argv[])
+extern "C"
 {
-    vector<vector<float>> mails_dataset = read_dataset("spambase.data");
-    std::random_device rd;
-    std::mt19937 g(rd());
-    std::shuffle(mails_dataset.begin(), mails_dataset.end(), g);
-    steady_clock::time_point begin = steady_clock::now();
-    cross_validation_result result = __10_folds_cross_validation(mails_dataset);
-    steady_clock::time_point end = steady_clock::now();
-    double elapsedTime = static_cast<double>(duration_cast<microseconds>(end - begin).count()) / 1000000;
-    cout << "Elapsed time = " << elapsedTime << " seconds.";
-    result.print_scores();
+    cross_validation_result py_main()
+    {
+        vector<vector<float>> mails_dataset = read_dataset("spambase.data");
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(mails_dataset.begin(), mails_dataset.end(), g);
+        // steady_clock::time_point begin = steady_clock::now();
+        cross_validation_result result = __10_folds_cross_validation(mails_dataset);
+        // steady_clock::time_point end = steady_clock::now();
+        // double elapsedTime = static_cast<double>(duration_cast<microseconds>(end - begin).count()) / 1000000;
+        // cout << "Time elapsed for Naive bayes (in seconds): " << elapsedTime << "\n";
+        // result.print_scores();
+        return result;
+    }
+}
+
+int main()
+{
+    // vector<vector<float>> mails_dataset = read_dataset("spambase.data");
+    // std::random_device rd;
+    // std::mt19937 g(rd());
+    // std::shuffle(mails_dataset.begin(), mails_dataset.end(), g);
+    // steady_clock::time_point begin = steady_clock::now();
+    // cross_validation_result result = __10_folds_cross_validation(mails_dataset);
+    // steady_clock::time_point end = steady_clock::now();
+    // double elapsedTime = static_cast<double>(duration_cast<microseconds>(end - begin).count()) / 1000000;
+    // cout << "Elapsed time = " << elapsedTime << " seconds.";
+    // result.print_scores();
     return 0;
 }

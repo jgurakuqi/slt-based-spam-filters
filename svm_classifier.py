@@ -21,20 +21,32 @@ def preprocessing_data(mailData):
 
 
 def printOutput(result, name_method, num_vectors):
-    print("##########################################################")
-    print("SVM classification using " + name_method + " kernel:\n")
-    print("Min Accuracy Kernel: " + str(result.min()) + "\n")
-    print("Max Accuracy Kernel: " + str(result.max()) + "\n")
-    print("Mean Accuracy Kernel: " + str(result.mean()) + "\n")
     print(
-        "Variance/Std Accuracy Kernel: "
+        "=========================================================="
+        + "\n"
+        + "SVM classification using "
+        + name_method
+        + " kernel:"
+        + "\n"
+        + "Minimum Accuracy Kernel: "
+        + str(result.min())
+        + "\n"
+        + "Average Accuracy Kernel: "
+        + str(result.mean())
+        + "\n"
+        + "Maximum Accuracy Kernel: "
+        + str(result.max())
+        + "\n"
+        + "Variance of Accuracy/Standard Deviation of Accuracy: "
         + str(result.var())
         + " / "
         + str(result.std())
         + "\n"
+        + "Number of support vectors used for a trained SVM: "
+        + str(num_vectors)
+        + "\n"
+        + "=========================================================="
     )
-    print("Number of support vectors used for a trained SVM: " + str(num_vectors))
-    print("##########################################################")
 
 
 ###################################################################
@@ -52,14 +64,14 @@ def svm(mailData):
     linear_classifier = SVC(kernel="linear", C=1.0)
     scores_linear = cross_val_score(linear_classifier, X, y, cv=10)
     linear_classifier_fit = linear_classifier.fit(X_train, y_train)
-    printOutput(scores_linear, "LINEAR", linear_classifier_fit.n_support_)
+    # printOutput(scores_linear, "LINEAR", linear_classifier_fit.n_support_)
 
     # SVM with polynomial of degree 2 kernel
 
     poly2_classifier = SVC(kernel="poly", degree=2, C=1.0)
     scores_poly2 = cross_val_score(poly2_classifier, X, y, cv=10)
     poly2_classifier_fit = poly2_classifier.fit(X_train, y_train)
-    printOutput(scores_poly2, "POLYNOMIAL OF DEGREE 2", poly2_classifier_fit.n_support_)
+    # printOutput(scores_poly2, "POLYNOMIAL OF DEGREE 2", poly2_classifier_fit.n_support_)
 
     # SVM with RBF kernel
 
@@ -70,9 +82,7 @@ def svm(mailData):
     radial_basis_function_clf_fit = radial_basis_function_classifier.fit(
         X_train, y_train
     )
-    printOutput(
-        scores_radial_basis_function, "RBF", radial_basis_function_clf_fit.n_support_
-    )
+    # printOutput( scores_radial_basis_function, "RBF", radial_basis_function_clf_fit.n_support_)
     return scores_linear, scores_poly2, scores_radial_basis_function
 
 
@@ -99,7 +109,7 @@ def svm_angular(mailData):
     linear_classifier_norm_fit = linear_classifier_norm.fit(
         tfidf(X_norm_train), y_norm_train
     )
-    printOutput(scores_linear_norm, "LINEAR", linear_classifier_norm_fit.n_support_)
+    # printOutput(scores_linear_norm, "LINEAR", linear_classifier_norm_fit.n_support_)
 
     # SVM with polynomial of degree 2 kernel
 
@@ -108,11 +118,11 @@ def svm_angular(mailData):
     poly2_classifier_norm_fit = poly2_classifier_norm.fit(
         tfidf(X_norm_train), y_norm_train
     )
-    printOutput(
-        scores_poly2_norm,
-        "POLYINOMIAL OF DEGREE 2",
-        poly2_classifier_norm_fit.n_support_,
-    )
+    # printOutput(
+    #     scores_poly2_norm,
+    #     "POLYINOMIAL OF DEGREE 2",
+    #     poly2_classifier_norm_fit.n_support_,
+    # )
 
     # SVM with RBF kernel
 
@@ -123,11 +133,11 @@ def svm_angular(mailData):
     radial_basis_fun_clf_norm_fit = radial_basis_function_clf_norm.fit(
         tfidf(X_norm_train), y_norm_train
     )
-    printOutput(
-        scores_radial_basis_function_norm,
-        "RBF",
-        radial_basis_fun_clf_norm_fit.n_support_,
-    )
+    # printOutput(
+    #     scores_radial_basis_function_norm,
+    #     "RBF",
+    #     radial_basis_fun_clf_norm_fit.n_support_,
+    # )
     return scores_linear_norm, scores_poly2_norm, scores_radial_basis_function_norm
 
 

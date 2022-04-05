@@ -14,6 +14,12 @@ using namespace std::chrono;
 constexpr float ABSOLUTE_MIN = numeric_limits<float>::min();
 constexpr float ABSOLUTE_MAX = numeric_limits<float>::max();
 
+/**
+ * @brief The following class defines the variables needed to include the most
+ * important statistics of accuracy for evaluation.
+ * This class was made extern in order to be accessible by Python.
+ *
+ */
 extern "C"
 {
     class cross_validation_result
@@ -41,6 +47,11 @@ extern "C"
     };
 }
 
+/**
+ * @brief This class was defined in order to include the two functions needed
+ * by cross validation to fit and test the training set for every fold.
+ *
+ */
 class naive_bayes_classifier
 {
 private:
@@ -55,6 +66,12 @@ public:
     naive_bayes_classifier() = default;
     ~naive_bayes_classifier() = default;
 
+    /**
+     * @brief The following function performs the test-scoring on the given test set.
+     *
+     * @param test_set
+     * @return float is the score evaluated
+     */
     float score(vector<vector<float>> &test_set)
     {
         int test_set_size = test_set.size();
@@ -76,6 +93,12 @@ public:
         return total / test_set_size;
     }
 
+    /**
+     * @brief This function performs the fitting of the model on the given dataset by
+     * computing the means, the variances and the probability of the two classes.
+     *
+     * @param dataset
+     */
     void fit(vector<vector<float>> &dataset)
     {
         int spam_frequency, ham_frequency;
@@ -142,6 +165,11 @@ public:
     }
 };
 
+/**
+ * @brief This function prints the whole dataset.
+ *
+ * @param dataset
+ */
 void print_dataset(vector<vector<float>> &dataset)
 {
     for (vector<float> &row : dataset)
@@ -154,6 +182,12 @@ void print_dataset(vector<vector<float>> &dataset)
     }
 }
 
+/**
+ * @brief This function reads the dataset from the given file path.
+ *
+ * @param filePath
+ * @return vector<vector<float>>
+ */
 vector<vector<float>> read_dataset(string filePath)
 {
     ifstream indata;
@@ -181,10 +215,12 @@ vector<vector<float>> read_dataset(string filePath)
 }
 
 /**
- * @brief The following function performs a ten fold cross-validation on the given dataset, first fitting
- * through Naive Bayes, then firing a thread for each fold configuration to compute the testing score.
+ * @brief The following function performs a ten fold cross-validation on the given dataset,
+ * slicing in 10 folds the dataset, and then iterating over each fold, taking it as test set
+ * and the rest as training set.
  *
- * @param mails_dataset
+ * @param mails_dataset is the dataset.
+ * @return cross_validation_result is the object containing the scores of the cross validation.
  */
 cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails_dataset)
 {
@@ -195,20 +231,12 @@ cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails
         test_fold_end;
     float total_score = 0.;
     int irregular_folds = (dataset_size % 10) != 0;
-    // vector<vector<float>> test_fold, train_folds;
     vector<vector<float>>::const_iterator dataset_begin = mails_dataset.begin();
-    // Thread pool initialization
-
     vector<float> all_scores(10);
-
-    // thread_provider<mutex> pool;
-    // CROSS VALIDATION.
     naive_bayes_classifier classifier;
+    // CROSS VALIDATION.
     for (uint8_t validation_iteration = 0; validation_iteration < 10; validation_iteration++)
     {
-        // pool.executeTask(
-        //     [&, validation_iteration, dataset_begin]()
-        //     {
         vector<vector<float>> test_fold, train_folds;
         test_fold_start = validation_iteration * fold_size;
         test_fold_end = (validation_iteration == 9 &&
@@ -222,20 +250,31 @@ cross_validation_result __10_folds_cross_validation(vector<vector<float>> &mails
         classifier.fit(train_folds);
         all_scores[validation_iteration] = classifier.score(test_fold);
         total_score += all_scores[validation_iteration];
-        // });
     }
     // pool.shutdown();
     cross_validation_result cv_result;
     cv_result.avg_accuracy = total_score / 10.;
     for (float &single_result : all_scores)
     {
-        cv_result.min_accuracy = (single_result < cv_result.min_accuracy) ? single_result : cv_result.min_accuracy;
-        cv_result.max_accuracy = (single_result > cv_result.max_accuracy) ? single_result : cv_result.max_accuracy;
-        cv_result.accuracy_variance += (single_result - cv_result.avg_accuracy) * (single_result - cv_result.avg_accuracy);
+        cv_result.min_accuracy = (single_result < cv_result.min_accuracy)
+                                     ? single_result
+                                     : cv_result.min_accuracy;
+        cv_result.max_accuracy = (single_result > cv_result.max_accuracy)
+                                     ? single_result
+                                     : cv_result.max_accuracy;
+        cv_result.accuracy_variance += (single_result - cv_result.avg_accuracy) *
+                                       (single_result - cv_result.avg_accuracy);
     }
     return cv_result;
 }
 
+/**
+ * @brief The following extern function reads and shuffles the dataset, and
+ * eventually applies cross validation to it, returning the resulting scores
+ * as cross_validation_result object.
+ * This function was made extern in order to be accessible by Python.
+ *
+ */
 extern "C"
 {
     cross_validation_result py_main()

@@ -244,27 +244,21 @@ extern "C"
         std::random_device rd;
         std::mt19937 g(rd());
         std::shuffle(mails_dataset.begin(), mails_dataset.end(), g);
-        // steady_clock::time_point begin = steady_clock::now();
-        cross_validation_result result = __10_folds_cross_validation(mails_dataset);
-        // steady_clock::time_point end = steady_clock::now();
-        // double elapsedTime = static_cast<double>(duration_cast<microseconds>(end - begin).count()) / 1000000;
-        // cout << "Time elapsed for Naive bayes (in seconds): " << elapsedTime << "\n";
-        // result.print_scores();
-        return result;
+        return __10_folds_cross_validation(mails_dataset);
     }
 }
 
 int main()
 {
-    // vector<vector<float>> mails_dataset = read_dataset("spambase.data");
-    // std::random_device rd;
-    // std::mt19937 g(rd());
-    // std::shuffle(mails_dataset.begin(), mails_dataset.end(), g);
-    // steady_clock::time_point begin = steady_clock::now();
-    // cross_validation_result result = __10_folds_cross_validation(mails_dataset);
-    // steady_clock::time_point end = steady_clock::now();
-    // double elapsedTime = static_cast<double>(duration_cast<microseconds>(end - begin).count()) / 1000000;
-    // cout << "Elapsed time = " << elapsedTime << " seconds.";
-    // result.print_scores();
+    vector<vector<float>> mails_dataset = read_dataset("spambase.data");
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(mails_dataset.begin(), mails_dataset.end(), g);
+    steady_clock::time_point begin = steady_clock::now();
+    cross_validation_result result = __10_folds_cross_validation(mails_dataset);
+    steady_clock::time_point end = steady_clock::now();
+    double elapsedTime = static_cast<double>(duration_cast<microseconds>(end - begin).count()) / 1000000;
+    cout << "Elapsed time = " << elapsedTime << " seconds.";
+    result.print_scores();
     return 0;
 }

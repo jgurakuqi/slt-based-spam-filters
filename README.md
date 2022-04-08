@@ -14,3 +14,5 @@ to export it as a callable library for Python:
 
 g++ -c -fPIC naive_bayes_main.cpp -O3 -Wextra -Wall -o naive_bayes_main.o
 g++ -shared -Wl,-soname,lib_naive.so -O3 -o lib_naive_.so  naive_bayes_main.o
+
+TEST

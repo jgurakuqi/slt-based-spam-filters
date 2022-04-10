@@ -21,33 +21,33 @@ def preprocessing_data(mailData):
     return X, y
 
 
-def printOutput(result, name_method, num_vectors):
-    print(
-        "=========================================================="
-        + "\n"
-        + "SVM classification using "
-        + name_method
-        + " kernel:"
-        + "\n"
-        + "Minimum Accuracy Kernel: "
-        + str(result.min())
-        + "\n"
-        + "Average Accuracy Kernel: "
-        + str(result.mean())
-        + "\n"
-        + "Maximum Accuracy Kernel: "
-        + str(result.max())
-        + "\n"
-        + "Variance of Accuracy/Standard Deviation of Accuracy: "
-        + str(result.var())
-        + " / "
-        + str(result.std())
-        + "\n"
-        + "Number of support vectors used for a trained SVM: "
-        + str(num_vectors)
-        + "\n"
-        + "=========================================================="
-    )
+# def printOutput(result, name_method, num_vectors):
+#     print(
+#         "=========================================================="
+#         + "\n"
+#         + "SVM classification using "
+#         + name_method
+#         + " kernel:"
+#         + "\n"
+#         + "Minimum Accuracy Kernel: "
+#         + str(result.min())
+#         + "\n"
+#         + "Average Accuracy Kernel: "
+#         + str(result.mean())
+#         + "\n"
+#         + "Maximum Accuracy Kernel: "
+#         + str(result.max())
+#         + "\n"
+#         + "Variance of Accuracy/Standard Deviation of Accuracy: "
+#         + str(result.var())
+#         + " / "
+#         + str(result.std())
+#         + "\n"
+#         + "Number of support vectors used for a trained SVM: "
+#         + str(num_vectors)
+#         + "\n"
+#         + "=========================================================="
+#     )
 
 
 ###################################################################
@@ -84,10 +84,8 @@ def svm(mailData):
 def svm_with_different_Cs(mailData):
     X, y = preprocessing_data(mailData)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-    Cs = [1, 25, 50, 75, 100]
-    linear_results = []
-    poly2_results = []
-    rbf_results = []
+    Cs = [0.3, 0.7, 1.0, 25.0, 50.0, 75.0, 100.0]
+    results = []
     for C in Cs:
         # Classifier model init and Cross validation
         start = time()
@@ -102,7 +100,7 @@ def svm_with_different_Cs(mailData):
         rbf_end = time()
 
         # Storing results
-        linear_results.append(
+        results.append(
             [
                 linear_score,
                 linear_classifier.fit(X_train, y_train).n_support_,
@@ -111,7 +109,7 @@ def svm_with_different_Cs(mailData):
                 C,
             ]
         )
-        poly2_results.append(
+        results.append(
             [
                 poly2_score,
                 poly2_classifier.fit(X_train, y_train).n_support_,
@@ -120,7 +118,7 @@ def svm_with_different_Cs(mailData):
                 C,
             ]
         )
-        rbf_results.append(
+        results.append(
             [
                 rbf_score,
                 radial_basis_function_classifier.fit(X_train, y_train).n_support_,
@@ -130,7 +128,7 @@ def svm_with_different_Cs(mailData):
             ]
         )
 
-    return linear_results, poly2_results, rbf_results
+    return results
 
 
 ###################################################################
@@ -182,10 +180,8 @@ def angular_svm_with_different_Cs(mailData):
         y_norm_train,
         y_norm_test,
     ) = train_test_split(X_norm, y, test_size=0.3)
-    Cs = [1, 25, 50, 75, 100]
-    norm_linear_results = []
-    norm_poly2_results = []
-    norm_rbf_results = []
+    Cs = [0.3, 0.7, 1.0, 25.0, 50.0, 75.0, 100.0]
+    results = []
     for C in Cs:
         # Classifier model init and Cross validation
         start = time()
@@ -200,7 +196,7 @@ def angular_svm_with_different_Cs(mailData):
         rbf_end = time()
 
         # Storing results
-        norm_linear_results.append(
+        results.append(
             [
                 norm_linear_score,
                 norm_linear_classifier.fit(
@@ -211,7 +207,7 @@ def angular_svm_with_different_Cs(mailData):
                 C,
             ]
         )
-        norm_poly2_results.append(
+        results.append(
             [
                 norm_poly2_score,
                 norm_poly2_classifier.fit(tfidf(X_norm_train), y_norm_train).n_support_,
@@ -220,17 +216,17 @@ def angular_svm_with_different_Cs(mailData):
                 C,
             ]
         )
-        norm_rbf_results.append(
+        results.append(
             [
                 norm_rbf_score,
                 norm_rbf_classifier.fit(tfidf(X_norm_train), y_norm_train).n_support_,
                 rbf_end - start,
-                "Norm RBF Poly SVC",
+                "Norm RBF SVC",
                 C,
             ]
         )
 
-    return norm_linear_results, norm_poly2_results, norm_rbf_results
+    return results
 
 
 # TODO:

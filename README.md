@@ -1,5 +1,26 @@
 # spam_filter
 
+# REQUIREMENTS:
+
+Write a spam filter using discrimitative and generative classifiers. Use the Spambase dataset which already represents spam/ham messages through a bag-of-words representations through a dictionary of 48 highly discriminative words and 6 characters. The first 54 features correspond to word/symbols frequencies; ignore features 55-57; feature 58 is the class label (1 spam/0 ham).
+
+Perform SVM classification using linear, polynomial of degree 2, and RBF kernels over the TF/IDF representation.
+Can you transform the kernels to make use of angular information only (i.e., no length)? Are they still positive definite kernels?
+Classify the same data also through a Naive Bayes classifier for continuous inputs, modelling each feature with a Gaussian distribution, resulting in the following model:
+
+where αk is the frequency of class k, and μki, σ2ki are the means and variances of feature i given that the data is in class k.
+Perform k-NN clasification with k=5
+Provide the code, the models on the training set, and the respective performances in 10 way cross validation.
+
+Explain the differences between the three models.
+
+
+
+P.S. you can use a library implementation for SVM, but do implement the Naive Bayes on your own. As for k-NN, you can use libraries if you want, but it might just be easier to do it on your own.
+
+
+# OUR NOTES:
+
 The jupyter notebook file is the files used to display the results from all the algorithms applied to
 the spam/ham dataset.
 

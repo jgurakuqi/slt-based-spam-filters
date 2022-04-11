@@ -1,19 +1,18 @@
-import cpuinfo
 from sklearn.svm import SVC
 from sklearn.model_selection import train_test_split
-from sklearn.model_selection import cross_val_score
 import numpy as np
 from time import time
+from sklearn.model_selection import GridSearchCV
+from common_utils import cpu_info
 
-
-if "Intel" in cpuinfo.get_cpu_info()["brand_raw"]:
+if "Intel" in cpu_info():
     from sklearnex import patch_sklearn
 
     patch_sklearn()
 
     from sklearn.svm import SVC
     from sklearn.model_selection import train_test_split
-    from sklearn.model_selection import cross_val_score
+    from sklearn.model_selection import GridSearchCV
 
 # This function returns the weight of the term in the document.
 def tfidf(mailData):
@@ -36,76 +35,52 @@ def preprocessing_data(mailData):
 ###################################################################
 
 
-def svm_with_different_Cs(mailData):
+def best_hyperparameter_svm(mailData):
     X, y = preprocessing_data(mailData)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
-    Cs = [0.3, 0.7, 1.0, 25.0, 50.0, 75.0, 100.0]
     results = []
-    for C in Cs:
-        # Classifier model init and Cross validation
+    param_grids = [
+        {
+            "C": [100],
+            "gamma": ["scale"],
+            "kernel": ["linear"],
+        },
+        {
+            "C": [75, 100],
+            "gamma": [420, "scale"],
+            "kernel": ["poly"],
+            "degree": [2],
+        },
+        {
+            "C": [1, 25, 50, 75, 100],
+            "gamma": [420, "scale"],
+            "kernel": ["rbf"],
+        },
+    ]
+    for param_grid in param_grids:
         start = time()
-        linear_classifier = SVC(kernel="linear", C=C)
-        linear_score = cross_val_score(linear_classifier, X, y, cv=10)
-        linear_end = time()
-        poly2_classifier = SVC(kernel="poly", degree=2, C=C)
-        poly2_score = cross_val_score(poly2_classifier, X, y, cv=10)
-        poly2_end = time()
-        radial_basis_function_classifier = SVC(kernel="rbf", C=C)
-        rbf_score = cross_val_score(radial_basis_function_classifier, X, y, cv=10)
-        rbf_end = time()
-
-        # Storing results
+        grid_res = GridSearchCV(SVC(), param_grid, refit=True, cv=10, n_jobs=-1)
+        grid_res.fit(X_train, y_train)
+        grid_score = np.fromiter(
+            (
+                grid_res.cv_results_["split" + str(i) + "_test_score"][
+                    grid_res.best_index_
+                ]
+                for i in range(0, 10)
+            ),
+            dtype=np.double,
+        )
+        elapsed_time = time() - start
         results += [
             [
-                linear_score,
-                linear_classifier.fit(X_train, y_train).n_support_,
-                linear_end - start,
-                "Linear SVC",
-                C,
-            ],
-            [
-                poly2_score,
-                poly2_classifier.fit(X_train, y_train).n_support_,
-                poly2_end - start,
-                "2-degree Poly SVC",
-                C,
-            ],
-            [
-                rbf_score,
-                radial_basis_function_classifier.fit(X_train, y_train).n_support_,
-                rbf_end - start,
-                "RBF SVC",
-                C,
-            ],
+                grid_score,
+                grid_res.best_estimator_.n_support_,
+                elapsed_time,
+                grid_res.best_params_["kernel"] + " SVM",
+                grid_res.best_params_["C"],
+                grid_res.best_estimator_._gamma,
+            ]
         ]
-        # results.append(
-        #     [
-        #         linear_score,
-        #         linear_classifier.fit(X_train, y_train).n_support_,
-        #         linear_end - start,
-        #         "Linear SVC",
-        #         C,
-        #     ]
-        # )
-        # results.append(
-        #     [
-        #         poly2_score,
-        #         poly2_classifier.fit(X_train, y_train).n_support_,
-        #         poly2_end - start,
-        #         "2-degree Poly SVC",
-        #         C,
-        #     ]
-        # )
-        # results.append(
-        #     [
-        #         rbf_score,
-        #         radial_basis_function_classifier.fit(X_train, y_train).n_support_,
-        #         rbf_end - start,
-        #         "RBF SVC",
-        #         C,
-        #     ]
-        # )
-
     return results
 
 
@@ -115,7 +90,7 @@ def svm_with_different_Cs(mailData):
 ###################################################################
 
 
-def angular_svm_with_different_Cs(mailData):
+def best_hyperparameter_angular_svm(mailData):
     X, y = preprocessing_data(mailData)
     norms = np.sqrt(((X + 1e-100) ** 2).sum(axis=1, keepdims=True))
     X_norm = np.where(norms > 0.0, X / norms, 0.0)
@@ -125,75 +100,51 @@ def angular_svm_with_different_Cs(mailData):
         y_norm_train,
         y_norm_test,
     ) = train_test_split(X_norm, y, test_size=0.3)
-    Cs = [0.3, 0.7, 1.0, 25.0, 50.0, 75.0, 100.0]
     results = []
-    for C in Cs:
-        # Classifier model init and Cross validation
+    param_grids = [
+        {
+            "C": [1, 25, 50, 75, 100],
+            "gamma": ["scale"],
+            "kernel": ["linear"],
+        },
+        {
+            "C": [1],
+            "gamma": ["scale"],
+            "kernel": ["poly"],
+            "degree": [2],
+        },
+        {
+            "C": [1, 25, 50, 75, 100],
+            "gamma": ["scale"],
+            "kernel": ["rbf"],
+        },
+    ]
+    for param_grid in param_grids:
         start = time()
-        norm_linear_classifier = SVC(kernel="linear", C=C)
-        norm_linear_score = cross_val_score(norm_linear_classifier, X_norm, y, cv=10)
-        linear_end = time()
-        norm_poly2_classifier = SVC(kernel="poly", degree=2, C=C)
-        norm_poly2_score = cross_val_score(norm_poly2_classifier, X_norm, y, cv=10)
-        poly2_end = time()
-        norm_rbf_classifier = SVC(kernel="rbf", C=C)
-        norm_rbf_score = cross_val_score(norm_rbf_classifier, X_norm, y, cv=10)
-        rbf_end = time()
-
-        # Storing results
+        grid_res = GridSearchCV(SVC(), param_grid, refit=True, cv=10, n_jobs=-1)
+        grid_res.fit(
+            X_norm_train,
+            y_norm_train,
+        )
+        grid_score = np.fromiter(
+            (
+                grid_res.cv_results_["split" + str(i) + "_test_score"][
+                    grid_res.best_index_
+                ]
+                for i in range(0, 10)
+            ),
+            dtype=np.double,
+        )
+        elapsed_time = time() - start
         results += [
             [
-                norm_linear_score,
-                norm_linear_classifier.fit(
-                    tfidf(X_norm_train), y_norm_train
-                ).n_support_,
-                linear_end - start,
-                "Norm Linear SVC",
-                C,
-            ],
-            [
-                norm_poly2_score,
-                norm_poly2_classifier.fit(tfidf(X_norm_train), y_norm_train).n_support_,
-                poly2_end - start,
-                "Norm 2-degree Poly SVC",
-                C,
-            ],
-            [
-                norm_rbf_score,
-                norm_rbf_classifier.fit(tfidf(X_norm_train), y_norm_train).n_support_,
-                rbf_end - start,
-                "Norm RBF SVC",
-                C,
-            ],
+                grid_score,
+                grid_res.best_estimator_.n_support_,
+                elapsed_time,
+                "Norm " + grid_res.best_params_["kernel"] + " SVM",
+                grid_res.best_params_["C"],
+                grid_res.best_estimator_._gamma,
+            ]
         ]
-        # results.append(
-        #     [
-        #         norm_linear_score,
-        #         norm_linear_classifier.fit(
-        #             tfidf(X_norm_train), y_norm_train
-        #         ).n_support_,
-        #         linear_end - start,
-        #         "Norm Linear SVC",
-        #         C,
-        #     ]
-        # )
-        # results.append(
-        #     [
-        #         norm_poly2_score,
-        #         norm_poly2_classifier.fit(tfidf(X_norm_train), y_norm_train).n_support_,
-        #         poly2_end - start,
-        #         "Norm 2-degree Poly SVC",
-        #         C,
-        #     ]
-        # )
-        # results.append(
-        #     [
-        #         norm_rbf_score,
-        #         norm_rbf_classifier.fit(tfidf(X_norm_train), y_norm_train).n_support_,
-        #         rbf_end - start,
-        #         "Norm RBF SVC",
-        #         C,
-        #     ]
-        # )
 
     return results

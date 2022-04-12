@@ -76,7 +76,7 @@ def best_hyperparameter_svm(mailData):
                 grid_score,
                 grid_res.best_estimator_.n_support_,
                 elapsed_time,
-                grid_res.best_params_["kernel"] + " SVM",
+                grid_res.best_params_["kernel"].capitalize() + " SVM",
                 grid_res.best_params_["C"],
                 grid_res.best_estimator_._gamma,
             ]
@@ -141,7 +141,7 @@ def best_hyperparameter_angular_svm(mailData):
                 grid_score,
                 grid_res.best_estimator_.n_support_,
                 elapsed_time,
-                "Norm " + grid_res.best_params_["kernel"] + " SVM",
+                "Norm " + grid_res.best_params_["kernel"].capitalize() + " SVM",
                 grid_res.best_params_["C"],
                 grid_res.best_estimator_._gamma,
             ]

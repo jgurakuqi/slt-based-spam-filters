@@ -54,17 +54,16 @@ extern "C"
  */
 class naive_bayes_classifier
 {
-private:
+public:
+    naive_bayes_classifier() = default;
+    ~naive_bayes_classifier() = default;
+
     vector<float> spam_mean,
         ham_mean,
         spam_variance,
         ham_variance;
     float spam_probability,
         ham_probability;
-
-public:
-    naive_bayes_classifier() = default;
-    ~naive_bayes_classifier() = default;
 
     /**
      * @brief The following function performs the test-scoring on the given test set.

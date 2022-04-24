@@ -5,8 +5,6 @@ from time import time
 from sklearn.model_selection import GridSearchCV
 from platform import processor
 
-# from common_utils import cpu_info
-
 if "x86" in processor():
     from sklearnex import patch_sklearn
 

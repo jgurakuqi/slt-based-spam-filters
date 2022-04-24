@@ -26,8 +26,6 @@ def k_nn(mailData):
 
 def k_nn_with_grid_search(mailData):
     np.random.shuffle(mailData)
-    # X = mailData[:, :54]  # values
-    # y = mailData[:, 57]  # classes
     param_grid = {
         "weights": ["uniform", "distance"],
         "n_neighbors": [5],

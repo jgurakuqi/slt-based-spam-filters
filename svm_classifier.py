@@ -29,13 +29,16 @@ def preprocessing_data(mailData):
     return X, y
 
 
-###################################################################
-# SVM classification using linear, polynomial of degree 2 and RBF #
-#  kernels over the TF/IDF representation. #
-###################################################################
-
-
 def best_hyperparameter_svm(mailData):
+    """This function takes the dataset and finds the best estimators for the linear,
+    polynomial and RBF kernels over the TF/IDF representation.
+
+    Args:
+        mailData (np array): is the dataset.
+
+    Returns:
+        array(array): it's an array containing the scores and descriptive data for each estimator.
+    """
     X, y = preprocessing_data(mailData)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
     results = []
@@ -84,13 +87,17 @@ def best_hyperparameter_svm(mailData):
     return results
 
 
-###################################################################
-# SVM classification using linear, polynomial of degree 2 and RBF #
-#                  kernels with ANGULAR INFORMATION.              #
-###################################################################
-
-
 def best_hyperparameter_angular_svm(mailData):
+    """This function takes the dataset and finds the best estimators for the linear,
+    polynomial and RBF kernels over the TF/IDF representation with angularised data
+    (in order to simulate the angular version of the kernels)
+
+    Args:
+        mailData (np array): is the dataset.
+
+    Returns:
+        array(array): it's an array containing the scores and descriptive data for each estimator.
+    """
     X, y = preprocessing_data(mailData)
     norms = np.sqrt(((X + 1e-100) ** 2).sum(axis=1, keepdims=True))
     X_norm = np.where(norms > 0.0, X / norms, 0.0)

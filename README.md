@@ -1,4 +1,4 @@
-# spam_filter
+# slt-based-spam-filters
 
 ## REQUIREMENTS:
 

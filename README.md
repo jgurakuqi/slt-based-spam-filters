@@ -58,7 +58,7 @@ and then run it through the following command (if you whish to run it from a bas
 
 MIT License
 
-Copyright (c) 2022 Jurgen Gurakuqi
+Copyright (c) 2022 Jurgen Gurakuqi, Elsa Sejdi
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
